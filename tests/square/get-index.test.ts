@@ -37,32 +37,49 @@ const getIndex = (x: number, y: number) => {
     guide = Math.abs(x) >= Math.abs(y) ? (x > 0 ? 0 : 2) : y > 0 ? 1 : 3;
   }
 
-  // * position 값 역산 시도 중
-  // const guide = Math.floor(position / (radius * 2));
-  const position = Math.abs(guide * (radius * 2));
-  const blockIndex = size + position + 1;
+  let position = 0;
+  switch (guide) {
+    case 0:
+      position = y + radius;
+      break;
+    case 1:
+      position = radius * 2 - (x - radius);
+      break;
+    case 2:
+      position = radius - y + radius * 4;
+      break;
+    case 3:
+      position = x + radius + radius * 6;
+      break;
+  }
+
+  let blockIndex = size + position;
+  const isLayerStart = position === 0 && radius > 0;
+  if (isLayerStart) {
+    const nextSize = Math.abs((8 * (radius + 1) * radius) / 2);
+    blockIndex = nextSize;
+  }
 
   return {
-    answer: Math.floor(blockIndex),
+    answer: blockIndex,
     radius,
     size,
     position,
     guide,
     diameter,
+    isLayerStart,
   };
 };
 
 describe("step-by-step-01", () => {
-  test("index 0~30 test", () => {
+  test("index 0~100 test", () => {
     const logs: any = [];
-    for (let i = 0; i <= 30; i++) {
+    for (let i = 0; i <= 100; i++) {
       const { _diameter, _guide, _coord, _position, _radius, _size } =
         getDebugMatrix(i);
 
-      const { answer, radius, size, position, guide, diameter } = getIndex(
-        _coord[0],
-        _coord[1]
-      );
+      const { answer, radius, size, position, guide, diameter, isLayerStart } =
+        getIndex(_coord[0], _coord[1]);
 
       const success = answer === i ? `✅` : `❌`;
       logs.push({
@@ -80,6 +97,7 @@ describe("step-by-step-01", () => {
         position,
         _guide,
         guide,
+        isLayerStart,
       });
     }
 
